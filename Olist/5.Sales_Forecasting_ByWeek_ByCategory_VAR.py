@@ -375,6 +375,7 @@ ax2_handles, ax2_labels = ax2.get_legend_handles_labels()
 ax1.legend(ax1_handles + ax2_handles, ax1_labels + ax2_labels, loc='upper left')
 
 ax1.set_title(sel_category)
+fig.text(0.867, 0.855, f"MAE: {round(mae,2)}", fontsize=6, ha='center')
 
 # plt.savefig('Olist/result/var/%s.png' %sel_category)
 plt.show()

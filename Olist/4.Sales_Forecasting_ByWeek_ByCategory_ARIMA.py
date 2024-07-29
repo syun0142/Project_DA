@@ -330,6 +330,7 @@ ax.plot(pd.concat([pd.concat([df_train['sales'],df_test['sales']]),forecast]).ro
 ax.legend(loc='upper left')
 
 ax.set_title(sel_category)
+fig.text(0.867, 0.855, f"MAE: {round(mae,2)}", fontsize=6, ha='center')
 
 # plt.savefig(f'Olist/result/arima/{sel_category}.png')
 plt.show()
