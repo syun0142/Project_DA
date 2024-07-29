@@ -202,7 +202,7 @@ for col in ['sales','review_score']:
     })
     sns.barplot(data=result_kpss, x='div', y='p_value', hue='div', ax=ax[1], palette='tab10')
     for index, row in result_kpss.iterrows():
-        ax[1].text(row.name, row.p_value, row.p_value, color='black', ha="center")
+        ax[1].text(row.name, round(row.p_value,3), round(row.p_value,3), color='black', ha="center")
     ax[1].set_title('KPSS')
     ax[1].set_xlabel('') 
     ax[1].set_ylabel('') 
