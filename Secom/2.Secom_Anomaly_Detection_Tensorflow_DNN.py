@@ -178,7 +178,7 @@ for col1, col2 in [('accuracy','loss'),('val_accuracy','val_loss')]:
 accuracy = model.evaluate(X_test, y_test)[1]
 print(f'Test Accuracy Score: {accuracy:.3f}')
 
-# 교차행렬 시각화
+# 혼동행렬 시각화
 y_predict_prob = model.predict(X_test).ravel()
 y_predict = (y_predict_prob > 0.5).astype(int)
 result = pd.Series(y_predict, index=y_test.index)

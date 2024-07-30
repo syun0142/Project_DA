@@ -362,7 +362,7 @@ result = pd.Series(y_predict, index=y_test.index)
 accuracy = accuracy_score(y_test, result)
 print(f'Test Accuracy Score: {accuracy:.3f}')
 
-# 교차행렬 시각화
+# 혼동행렬 시각화
 cm = confusion_matrix(y_test, result)
 labels = ['Positive', 'Negative']
 
