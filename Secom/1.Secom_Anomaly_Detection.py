@@ -267,7 +267,7 @@ for model_name, model in models_opt.items():
 for model_name, params in best_params.items():
     print(model_name, params)
 
-#8.모델 학습 및 검증
+#8.모델 학습 및 검증, 테스트
 models = []
 
 # LogisticRegression
@@ -345,7 +345,7 @@ plt.ylabel('')
 plt.legend(title=None)
 plt.show()
 
-#9.테스트
+# 테스트
 model = RandomForestClassifier(
                     max_features='sqrt',
                     max_depth=15,
