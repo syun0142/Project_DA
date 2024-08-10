@@ -120,8 +120,8 @@ print(opt.best_params_)
 model = IsolationForest(
         bootstrap=False,
         contamination=0.01, 
-        n_estimators=366, # 856 # opt.best_params_['n_estimators'] 
-        max_samples=0.96497204514265, # 0.8273648887360431 # opt.best_params_['max_samples'] 
+        n_estimators=366,
+        max_samples=0.96497204514265,
         random_state=999)
 model.fit(df_sub.values)
 df['outliers'] = model.predict(df_sub.values)
@@ -258,7 +258,7 @@ for model_name, model in models_opt.items():
         search_space[model_name],
         n_iter=20,
         cv=5,
-        scoring='accuracy'
+        scoring='f1'
     )
     opt.fit(X_train, y_train)
     best_params[model_name] = opt.best_params_
@@ -272,15 +272,15 @@ models = []
 
 # LogisticRegression
 model_lr = LogisticRegression(
-                    max_iter=989,
-                    C=0.915,
+                    max_iter=346,
+                    C=95.01427071068204,
                     random_state=999)
 models.append(('LR', model_lr))
 
 # SVM
 model_svm = SVC(kernel='rbf',
                     gamma='auto',
-                    C=100, 
+                    C=96.52664611171467, 
                     random_state=999)
 models.append(('SVM', model_svm))
 
@@ -296,21 +296,21 @@ models.append(('RF', model_rf))
 
 # XGBClassifier
 model_xgb = XGBClassifier(
-                    max_depth=13,
-                    n_estimators=494,
+                    max_depth=5,
+                    n_estimators=555,
                     min_child_weight=1,
-                    learning_rate=0.228,
-                    subsample=0.811,
+                    learning_rate=0.914283124778337,
+                    subsample=0.7647523420943885,
                     random_state=999)
 models.append(('XGB', model_xgb))
 
 # LGBMClassifier
 model_lgbm = LGBMClassifier(
-                    max_depth=18,
+                    max_depth=6,
                     n_estimators=1000,
-                    min_child_weight=1,
-                    learning_rate=0.216,
-                    num_leaves=246,
+                    min_child_weight=2,
+                    learning_rate=0.2520394704644634,
+                    num_leaves=1000,
                     verbose=-1,
                     random_state=999)
 models.append(('LGBM', model_lgbm))
