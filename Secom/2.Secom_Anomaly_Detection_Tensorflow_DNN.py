@@ -184,7 +184,7 @@ y_predict = (y_predict_prob > 0.5).astype(int)
 result = pd.Series(y_predict, index=y_test.index)
 
 cm = confusion_matrix(y_test, y_predict)
-labels = ['Positive', 'Negative']
+labels = ['Negative', 'Positive']
 
 plt.figure(figsize=(8, 6))
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=labels, yticklabels=labels)

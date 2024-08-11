@@ -364,7 +364,7 @@ print(f'Test Accuracy Score: {accuracy:.3f}')
 
 # 혼동행렬 시각화
 cm = confusion_matrix(y_test, result)
-labels = ['Positive', 'Negative']
+labels = ['Negative', 'Positive']
 
 plt.figure(figsize=(8, 6))
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=labels, yticklabels=labels)
