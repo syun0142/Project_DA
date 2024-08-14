@@ -203,10 +203,10 @@ plt.show()
 X = df_std[all_columns[selected_mask]]
 
 #6.데이터 분리
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, shuffle=False)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
 
 # 오버샘플링
-smote = SMOTE(sampling_strategy=0.25, k_neighbors=4, random_state=999)
+smote = SMOTE(sampling_strategy=1, k_neighbors=4, random_state=999)
 X_train, y_train = smote.fit_resample(X_train, y_train)
 
 #7.하이퍼파라미터 최적화
@@ -256,9 +256,9 @@ for model_name, model in models_opt.items():
     opt = BayesSearchCV(
         model,
         search_space[model_name],
-        n_iter=20,
+        n_iter=10,
         cv=5,
-        scoring='f1'
+        scoring='recall'
     )
     opt.fit(X_train, y_train)
     best_params[model_name] = opt.best_params_
@@ -272,45 +272,45 @@ models = []
 
 # LogisticRegression
 model_lr = LogisticRegression(
-                    max_iter=346,
-                    C=95.01427071068204,
+                    max_iter=132,
+                    C=78.425,
                     random_state=999)
 models.append(('LR', model_lr))
 
 # SVM
 model_svm = SVC(kernel='rbf',
                     gamma='auto',
-                    C=96.52664611171467, 
+                    C=74.855,
                     random_state=999)
 models.append(('SVM', model_svm))
 
 # RandomForestClassifier
 model_rf = RandomForestClassifier(
                     max_features='sqrt',
-                    max_depth=15,
-                    n_estimators=1000,
-                    min_samples_split=2,
-                    min_samples_leaf=1,
+                    max_depth=16,
+                    n_estimators=387,
+                    min_samples_split=3,
+                    min_samples_leaf=5,
                     random_state=999)
 models.append(('RF', model_rf))
 
 # XGBClassifier
 model_xgb = XGBClassifier(
-                    max_depth=5,
-                    n_estimators=555,
-                    min_child_weight=1,
-                    learning_rate=0.914283124778337,
-                    subsample=0.7647523420943885,
+                    max_depth=20,
+                    n_estimators=565,
+                    min_child_weight=4,
+                    learning_rate=0.516227,
+                    subsample=0.570592,
                     random_state=999)
 models.append(('XGB', model_xgb))
 
 # LGBMClassifier
 model_lgbm = LGBMClassifier(
-                    max_depth=6,
-                    n_estimators=1000,
-                    min_child_weight=2,
-                    learning_rate=0.2520394704644634,
-                    num_leaves=1000,
+                    max_depth=4,
+                    n_estimators=860,
+                    min_child_weight=4,
+                    learning_rate=0.232838,
+                    num_leaves=14,
                     verbose=-1,
                     random_state=999)
 models.append(('LGBM', model_lgbm))
@@ -346,12 +346,13 @@ plt.legend(title=None)
 plt.show()
 
 # 테스트
-model = RandomForestClassifier(
-                    max_features='sqrt',
-                    max_depth=15,
-                    n_estimators=1000,
-                    min_samples_split=2,
-                    min_samples_leaf=1,
+model = LGBMClassifier(
+                    max_depth=4,
+                    n_estimators=860,
+                    min_child_weight=4,
+                    learning_rate=0.232838,
+                    num_leaves=14,
+                    verbose=-1,
                     random_state=999)
 model.fit(X_train,y_train)
 y_predict = model.predict(X_test)
