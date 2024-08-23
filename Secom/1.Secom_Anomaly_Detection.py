@@ -288,7 +288,7 @@ models.append(('SVM', model_svm))
 model_rf = RandomForestClassifier(
                     max_features='sqrt',
                     max_depth=16,
-                    n_estimators=171,
+                    n_estimators=203,
                     min_samples_split=9,
                     min_samples_leaf=1,
                     random_state=999)
@@ -296,9 +296,9 @@ models.append(('RF', model_rf))
 
 # XGBClassifier
 model_xgb = XGBClassifier(
-                    max_depth=12,
-                    n_estimators=915,
-                    min_child_weight=12,
+                    max_depth=10,
+                    n_estimators=862,
+                    min_child_weight=8,
                     learning_rate=0.14245197436308377,
                     subsample=0.9450130261919871,
                     random_state=999)
@@ -306,23 +306,23 @@ models.append(('XGB', model_xgb))
 
 # LGBMClassifier
 model_lgbm = LGBMClassifier(
-                    max_depth=19,
-                    n_estimators=329,
-                    min_child_weight=4,
+                    max_depth=50,
+                    n_estimators=257,
+                    min_child_weight=8,
                     learning_rate=0.8833751829421289,
-                    num_leaves=91,
+                    num_leaves=198,
                     verbose=-1,
                     random_state=999)
 models.append(('LGBM', model_lgbm))
 
 # 모델 평가
-df_models_optimized = pd.DataFrame(columns=['Model_name','Accuracy','F1 Score'])
+df_models_optimized = pd.DataFrame(columns=['Model_name','Accuracy','Recall'])
 kfold = KFold(n_splits=5,shuffle=True,random_state=999)
 for name, model in models:
     model_optimized = pd.DataFrame({
                     'Model_name':[name],
                     'Accuracy': [cross_validate(model, X_train, y_train, cv=kfold, scoring='accuracy')['test_score'].mean().round(3)],
-                    'F1 Score':[cross_validate(model, X_train, y_train, cv=kfold, scoring='f1')['test_score'].mean().round(3)]
+                    'Recall':[cross_validate(model, X_train, y_train, cv=kfold, scoring='recall')['test_score'].mean().round(3)]
     })
     df_models_optimized = pd.concat([df_models_optimized,model_optimized], ignore_index=True)
 
@@ -346,12 +346,12 @@ plt.legend(title=None)
 plt.show()
 
 # 테스트
-model = RandomForestClassifier(
-                    max_features='sqrt',
-                    max_depth=16,
-                    n_estimators=171,
-                    min_samples_split=9,
-                    min_samples_leaf=1,
+model = XGBClassifier(
+                    max_depth=10,
+                    n_estimators=862,
+                    min_child_weight=8,
+                    learning_rate=0.14245197436308377,
+                    subsample=0.9450130261919871,
                     random_state=999)
 model.fit(X_train,y_train)
 y_predict = model.predict(X_test)
