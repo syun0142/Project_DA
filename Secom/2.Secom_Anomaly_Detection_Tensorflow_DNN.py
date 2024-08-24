@@ -5,8 +5,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+from imblearn.over_sampling import SMOTE
 import random
 import tensorflow as tf
+from tensorflow.keras import backend as K # type: ignore
 from tensorflow.keras.models import Sequential # type: ignore
 from tensorflow.keras.layers import Dense, Dropout, Input # type: ignore
 from tensorflow.keras.optimizers import Adam # type: ignore
@@ -85,14 +87,31 @@ df_std = pd.concat([df_X_std,df.iloc[:,-1]],axis=1)
 X = df_std.drop(columns='Pass/Fail')
 y = df_std['Pass/Fail'].replace(-1, 0)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, shuffle=False)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=True, random_state=101)
+
+# 오버샘플링
+smote = SMOTE(sampling_strategy=0.3, k_neighbors=5, random_state=101)
+X_train, y_train = smote.fit_resample(X_train, y_train)
 
 #6.하이퍼파라미터 최적화
 # 난수 시드 설정
 random.seed(999)
 tf.random.set_seed(999)
 
-# 베이지안 최적화 모델로부터 파라미터를 입력받아 DNN 모델의 정확도를 반환하는 함수 정의
+# 재현율을 계산하는 사용자 정의 지표 함수
+def recall_score(y_true, y_pred):
+    y_pred = K.round(y_pred)
+    y_true = K.cast(y_true, dtype='float32')
+    y_pred = K.cast(y_pred, dtype='float32')
+    
+    tp = K.sum(K.cast(y_true * y_pred, dtype='float32'))  # True Positives
+    fn = K.sum(K.cast(y_true * (1 - y_pred), dtype='float32'))  # False Negatives
+
+    recall = tp / (tp + fn + K.epsilon())
+    
+    return recall
+
+# 베이지안 최적화 모델로부터 파라미터를 입력받아 DNN 모델의 재현율을 반환하는 함수 정의
 def create_model(learning_rate, n_hidden_layers, layer1_units, layer2_units, layer3_units, layer1_activation, layer2_activation, layer3_activation, epochs, batch_size):
     created_model = Sequential()
     created_model.add(Input(shape=(len(X_train.columns),)))
@@ -105,13 +124,13 @@ def create_model(learning_rate, n_hidden_layers, layer1_units, layer2_units, lay
     
     created_model.add(Dense(1, activation='sigmoid'))
     
-    created_model.compile(optimizer=Adam(learning_rate=learning_rate), loss='binary_crossentropy', metrics=['accuracy'])
+    created_model.compile(optimizer=Adam(learning_rate=learning_rate), loss='binary_crossentropy', metrics=[recall_score])
     
     created_model_fit = created_model.fit(X_train, y_train, epochs=int(epochs), batch_size=int(batch_size), validation_split=0.2, verbose=0)
 
-    accuracy = created_model_fit.history['val_accuracy'][-1]
+    recall = created_model_fit.history['val_recall_score'][-1]
     
-    return accuracy
+    return recall
 
 opt = BayesianOptimization( # 베이지안 최적화 정의
     f=create_model,
@@ -124,7 +143,7 @@ opt = BayesianOptimization( # 베이지안 최적화 정의
         'layer1_activation': (0, 1),
         'layer2_activation': (0, 1),
         'layer3_activation': (0, 1),
-        'epochs':(2,50),
+        'epochs':(2,20),
         'batch_size':(16,128),
     }
 )
@@ -132,7 +151,7 @@ opt = BayesianOptimization( # 베이지안 최적화 정의
 opt.maximize(init_points=5, n_iter=10)
 
 print("Best Params:", opt.max['params'])
-print("Best Accuracy:", opt.max['target'])
+print("Best Recall:", opt.max['target'])
 
 #7.딥러닝
 # 난수 시드 설정
@@ -142,22 +161,24 @@ tf.random.set_seed(999)
 # 모델 생성 (DNN)
 model = Sequential([
     Input(shape=(len(X_train.columns),)),
-    Dense(212, activation='sigmoid'),
-    Dense(140, activation='sigmoid'),
+    Dense(32, activation='sigmoid'),
+    Dense(93, activation='sigmoid'),
+    Dense(111, activation='sigmoid'),
     Dense(1, activation='sigmoid')
 ])
 
 # 모델 컴파일
-model.compile(optimizer=Adam(learning_rate=0.008358586518712194), loss='binary_crossentropy', metrics=['accuracy'])
+model.compile(optimizer=Adam(learning_rate=0.01), loss='binary_crossentropy', metrics=[recall_score])
 
 # 모델 학습 및 검증
-model_fit = model.fit(X_train, y_train, epochs=4, batch_size=58, validation_split=0.2)
+model_fit = model.fit(X_train, y_train, epochs=20, batch_size=100, validation_split=0.2)
 
 # 모델 학습 및 검증 결과 시각화
 history = pd.DataFrame(model_fit.history)
+history_len = len(history)-1
 
-for col1, col2 in [('accuracy','loss'),('val_accuracy','val_loss')]:
-    df_view = history.iloc[-1][[col1,col2]].reset_index().rename(columns={'index':'div',3:'value'})
+for col1, col2 in [('recall_score','loss'),('val_recall_score','val_loss')]:
+    df_view = history.iloc[-1][[col1,col2]].reset_index().rename(columns={'index':'div',history_len:'value'})
 
     fig, ax = plt.subplots(figsize=(10,5))
     sns.barplot(x='div', y='value', data=df_view, palette=['#80A8E5','#A06CE4'])
@@ -174,9 +195,8 @@ for col1, col2 in [('accuracy','loss'),('val_accuracy','val_loss')]:
     ax.legend().remove()
     plt.show()
 
-# 테스트 정확도 평가
-accuracy = model.evaluate(X_test, y_test)[1]
-print(f'Test Accuracy Score: {accuracy:.3f}')
+# 테스트 재현율 평가
+model.evaluate(X_test, y_test)[1]
 
 # 혼동행렬 시각화
 y_predict_prob = model.predict(X_test).ravel()
