@@ -127,7 +127,7 @@ model.fit(df_sub.values)
 df['outliers'] = model.predict(df_sub.values)
 
 for col in df.columns[:-2]:
-        df.loc[df['outliers']==-1,col]=np.NaN
+        df.loc[df['outliers']==-1,col]=np.nan
 df = df.fillna(df.mean())
 
 df = df.drop(columns='outliers')
