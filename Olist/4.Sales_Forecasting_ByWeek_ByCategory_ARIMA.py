@@ -13,10 +13,10 @@ from statsmodels.tsa.arima.model import ARIMA
 from sklearn.metrics import mean_absolute_error
 
 #1.데이터 로드
-df_orders = pd.read_csv('Olist/data/olist_orders_dataset.csv')
-df_items = pd.read_csv('Olist/data/olist_order_items_dataset.csv')
-df_products = pd.read_csv('Olist/data/olist_products_dataset.csv')
-df_product_category_name = pd.read_csv('Olist/data/product_category_name_translation.csv')
+df_orders = pd.read_csv('./data/olist_orders_dataset.csv')
+df_items = pd.read_csv('./data/olist_order_items_dataset.csv')
+df_products = pd.read_csv('./data/olist_products_dataset.csv')
+df_product_category_name = pd.read_csv('./data/product_category_name_translation.csv')
 
 # df_orders 전처리
 df_orders = df_orders[['order_id','order_purchase_timestamp']]
@@ -290,6 +290,11 @@ ax.fill_between(ci_index, ci_lower, ci_upper, color='tab:gray', alpha=0.1, label
 ax.vlines(forecast.index.min(), 0, pd.concat([df_train['sales'],df_test['sales']]).max()*1.2, linestyle='--', color='tab:red', label='Start of Prediction')
 ax.legend(loc='upper left')
 ax.set_title(sel_category)
+
+# 정확도 평가(MAE)
+mae = mean_absolute_error(df_test['sales'], forecast)
+fig.text(0.867, 0.855, f"MAE: {round(mae,2)}", fontsize=6, ha='center')
+# plt.savefig(f'./result/arima/back_{sel_category}.png')
 plt.show()
 
 # 모델 적합성 평가(AIC)
@@ -298,10 +303,6 @@ print(model_fit.summary())
 fig, ax = plt.subplots(figsize=(10,5))
 sgt.plot_acf(model_fit.resid,ax=ax) # 신뢰구간 내 자기상관이 존재하므로 적합성 양호
 plt.show()
-
-# 정확도 평가
-mae = mean_absolute_error(df_test['sales'], forecast)
-print("Mean Absolute Error (MAE): %.3f" % mae)
 
 #6.실데이터 예측
 # ARIMA 모델 구축
@@ -326,11 +327,8 @@ ax.plot(forecast, label='Forecast', color='tab:orange')
 ax.fill_between(ci_index, ci_lower, ci_upper, color='tab:gray', alpha=0.1, label='95% Prediction Interval')
 ax.vlines(forecast.index.min(), 0, pd.concat([df_train['sales'],df_test['sales']]).max()*1.2, linestyle='--', color='tab:red', label='Start of Prediction')
 ax.plot(pd.concat([pd.concat([df_train['sales'],df_test['sales']]),forecast]).rolling(window=26).mean(), label='MA26',color='tab:red')
-
 ax.legend(loc='upper left')
-
 ax.set_title(sel_category)
-fig.text(0.867, 0.855, f"MAE: {round(mae,2)}", fontsize=6, ha='center')
 
-# plt.savefig(f'Olist/result/arima/{sel_category}.png')
+# plt.savefig(f'./result/arima/{sel_category}.png')
 plt.show()
